@@ -330,13 +330,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
     background: rgba(44,73,201,.1);
     font-family: 'Patrick Hand', cursive;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 700;
     color: #2C49C9;
     cursor: pointer;
     border: 2px dashed rgba(44,73,201,.35);
+    line-height: 1.2;
+    padding: 4px;
   }
 
   /* ── Lightbox ── */
@@ -481,11 +484,11 @@ const cats = [
   { id: 18, name: "Alfie", description: "Matted, smelly, extremely cute", status: "Adopted", location: "Boulder, CO", intake: "July 2024", exit: "December 2024", pair: "Annie", hero: "photos/18/COVER.jpg", extra: ["photos/18/IMG_9298.jpg","photos/18/IMG_9383.jpg","photos/18/IMG_9471.jpg","photos/18/IMG_9978.jpg"] },
   { id: 19, name: "Athena", description: "Fancy breed, owner picked her back up after recovery", status: "Returned to owner", location: "Boulder, CO", intake: "March 2025", exit: "March 2025", pair: null, hero: "photos/19/IMG_0759.jpg", extra: ["photos/19/IMG_0791.jpg"] },
   { id: 20, name: "Milli", description: "Spaz", status: "Adopted", location: "Boulder, CO", intake: "March 2025", exit: "April 2025", pair: null, hero: "photos/20/COVER.jpg", extra: ["photos/20/IMG_1374.jpg"] },
-  { id: 21, name: "Bullet", description: "Our first orange, came in recovery, goofball that liked movies", status: "Adopted", location: "Boulder, CO", intake: "May 2025", exit: "August 2025", pair: null, hero: "photos/21/COVER.jpg", extra: ["photos/21/IMG_1818.jpg","photos/21/IMG_2074.jpg","photos/21/IMG_2377.jpg"] },
-  { id: 22, name: "Sully", description: "Big boy fat sully, hurt when he walked on you", status: "Adopted", location: "Boulder, CO", intake: "September 2025", exit: "October 2025", pair: null, hero: "photos/22/COVER.jpg", extra: ["photos/22/IMG_2534.jpg","photos/22/IMG_2553.jpg"] },
+  { id: 21, name: "Bullet", aka: "fat and rude", description: "Our first orange, came in recovery, goofball that liked movies", status: "Adopted", location: "Boulder, CO", intake: "May 2025", exit: "August 2025", pair: null, hero: "photos/21/COVER.jpg", extra: ["photos/21/IMG_1818.jpg","photos/21/IMG_2074.jpg","photos/21/IMG_2377.jpg"] },
+  { id: 22, name: "Sully", aka: "obese and nice", description: "Big boy fat sully, hurt when he walked on you", status: "Adopted", location: "Boulder, CO", intake: "September 2025", exit: "October 2025", pair: null, hero: "photos/22/COVER.jpg", extra: ["photos/22/IMG_2534.jpg","photos/22/IMG_2553.jpg"] },
   { id: 23, name: "Philip the II", description: "Toothless, never sits down, had lots of boogers", status: "Adopted", location: "Boulder, CO", intake: "November 2025", exit: "March 31, 2026", pair: null, hero: "photos/23/COVER.jpg", extra: ["photos/23/IMG_3107.jpg","photos/23/IMG_3240.jpg","photos/23/IMG_3246.jpg","photos/23/IMG_3605.jpg"] },
-  { id: 24, name: "Beau", description: "Neurotic to the bone, bit ankles", status: "Adopted", location: "Boulder, CO", intake: "April 2026", exit: "April 2026", pair: null, hero: "photos/24/IMG_4074.jpg", extra: [] },
-  { id: 25, name: "Limpy", description: "A curious hoarder", status: "With us now", current: true, location: "Boulder, CO", intake: "April 2026", exit: null, pair: null, hero: "photos/25/IMG_4999.jpg", extra: ["photos/25/IMG_5011.jpg"] },
+  { id: 24, name: "Beau", aka: "f**khead beau", description: "Neurotic to the bone, bit ankles", status: "Adopted", location: "Boulder, CO", intake: "April 2026", exit: "April 2026", pair: null, hero: "photos/24/IMG_4074.jpg", extra: [] },
+  { id: 25, name: "Limpy", aka: "TBD", description: "A curious hoarder", status: "With us now", current: true, location: "Boulder, CO", intake: "April 2026", exit: null, pair: null, hero: "photos/25/IMG_4999.jpg", extra: ["photos/25/IMG_5011.jpg"] },
 ];
 
 const tapeOrder = ['tape-red','tape-cobalt','tape-green','tape-amber','tape-cream'];
@@ -584,7 +587,14 @@ function buildCard(cat) {
   }
 
   // New format: who / where / when / status
-  back.appendChild(row('who', cat.name));
+  const whoRow = row('who', cat.name);
+  if (cat.aka) {
+    const akaEl = document.createElement('div');
+    akaEl.style.cssText = "font-family:'Patrick Hand',cursive;font-size:11px;color:#6A655C;font-style:italic;margin-top:1px;";
+    akaEl.textContent = `aka ${cat.aka}`;
+    whoRow.appendChild(akaEl);
+  }
+  back.appendChild(whoRow);
   back.appendChild(row('where', cat.location));
 
   const whenStr = cat.exit
@@ -596,14 +606,14 @@ function buildCard(cat) {
   if (cat.memorial) statusText = 'Resting in peace ✦';
   back.appendChild(row('status', statusText));
 
-  // Photo thumbnails (up to 3, click opens lightbox)
+  // Photo thumbnails: show up to 3; if >3, slot 3 is "see more"
   const allExtras = cat.extra || [];
   if (allExtras.length > 0) {
     const thumbs = document.createElement('div');
     thumbs.className = 'back-thumbs';
 
-    const show = allExtras.slice(0, 3);
-    const remaining = allExtras.length - show.length;
+    const hasMore = allExtras.length > 3;
+    const show = hasMore ? allExtras.slice(0, 2) : allExtras;
 
     show.forEach((src, i) => {
       const t = document.createElement('div');
@@ -622,10 +632,10 @@ function buildCard(cat) {
       thumbs.appendChild(t);
     });
 
-    if (remaining > 0) {
+    if (hasMore) {
       const more = document.createElement('div');
       more.className = 'back-thumb back-thumb-more';
-      more.textContent = `+${remaining}`;
+      more.textContent = `see more`;
       more.setAttribute('role', 'button');
       more.addEventListener('click', (e) => {
         e.stopPropagation();
